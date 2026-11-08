@@ -1,4 +1,23 @@
-import type { Booking, CheckResult, RoomRef } from '@/lib/types';
+export interface Booking {
+  id: string;
+  room: string;
+  start: number; // minutes from midnight
+  end: number;
+  title: string;
+}
+
+export interface Room {
+  id: string;
+  name: string;
+  building: string;
+  capacity: number;
+  blocked: boolean;
+}
+
+export interface CheckResult {
+  available: boolean;
+  reason: string;
+}
 
 export const DAY_END_MINUTES = 1440;
 export const MAX_BOOKING_MINUTES = 120;
@@ -16,16 +35,12 @@ function overlap(aStart: number, aEnd: number, bStart: number, bEnd: number): bo
   return aStart < bEnd && bStart < aEnd;
 }
 
-export function bookingsForRoom(bookings: Booking[], roomId: string): Booking[] {
-  return bookings.filter((b) => b.room === roomId);
-}
-
 export function checkAvailability(
   roomId: string,
   start: number,
   end: number,
   currentTime: number,
-  rooms: RoomRef[],
+  rooms: Room[],
   bookings: Booking[],
 ): CheckResult {
   const room = rooms.find((r) => r.id === roomId);
@@ -50,7 +65,8 @@ export function checkAvailability(
   }
 
   // AC4: overlap check (touching endpoints allowed)
-  for (const b of bookingsForRoom(bookings, roomId)) {
+  const roomBookings = bookings.filter((b) => b.room === roomId);
+  for (const b of roomBookings) {
     if (overlap(start, end, b.start, b.end)) {
       return {
         available: false,

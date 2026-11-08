@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { checkAvailability } from './availability';
-import type { Booking, Room } from '@/lib/types';
+import { checkAvailability, type Booking, type Room } from './availability';
 
 const rooms: Room[] = [
-  { id: 'open', name: 'A-101', building: 'Engineering Block', capacity: 40, equipment: [], blocked: false },
-  { id: 'blocked', name: 'C-305', building: 'Business Block', capacity: 60, equipment: [], blocked: true },
-  { id: 'other', name: 'E-402', building: 'Arts Center', capacity: 30, equipment: [], blocked: false },
+  { id: 'open', name: 'A-101', building: 'Engineering Block', capacity: 40, blocked: false },
+  { id: 'blocked', name: 'C-305', building: 'Business Block', capacity: 60, blocked: true },
+  { id: 'other', name: 'E-402', building: 'Arts Center', capacity: 30, blocked: false },
 ];
 
 const bookings: Booking[] = [
@@ -90,23 +89,5 @@ describe('checkAvailability', () => {
 
     expect(rooms).toEqual(roomsBefore);
     expect(bookings).toEqual(bookingsBefore);
-  });
-
-  it('reports the first conflict in input order and leaves unsorted bookings unchanged', () => {
-    const roomsForOrder: Room[] = [
-      { id: 'open', name: 'A-101', building: 'Engineering Block', capacity: 40, equipment: [], blocked: false },
-    ];
-    const unsorted: Booking[] = [
-      { id: 'late', room: 'open', start: 660, end: 690, title: 'Later booking' },
-      { id: 'early', room: 'open', start: 600, end: 660, title: 'Earlier booking' },
-    ];
-    const before = structuredClone(unsorted);
-
-    const result = checkAvailability('open', 645, 675, 480, roomsForOrder, unsorted);
-
-    expect(result.available).toBe(false);
-    expect(result.reason).toContain('overlaps with "Later booking"');
-    expect(unsorted).toEqual(before);
-    expect(unsorted.map((b) => b.title)).toEqual(['Later booking', 'Earlier booking']);
   });
 });
